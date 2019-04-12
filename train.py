@@ -23,7 +23,7 @@ def main(argv):
     params = model_params.BASE_PARAMS
 
     # Get the data
-    (train_X, train_y), (test_X, test_y), infer_X = data_utils.load_data()
+    train_X, train_y, test_X, test_y, inf_text, tokenizer = data_utils.get_data()
 
 
 if __name__ == "__main__":
