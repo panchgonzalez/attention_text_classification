@@ -1,4 +1,4 @@
-"""Train sentiment classifier."""
+"""Train and evaluate sentiment classifier."""
 
 from __future__ import division
 from __future__ import print_function

@@ -4,11 +4,18 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import absolute_import
 
+import os
 import re
+from tqdm import tqdm
+
+tqdm.pandas()
+
+import pickle
 import numpy as np
 import pandas as pd
 
 from nltk.corpus import stopwords
+from nltk.stem import SnowballStemmer
 from sklearn.model_selection import train_test_split
 
 import tensorflow as tf
