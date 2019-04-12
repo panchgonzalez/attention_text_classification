@@ -25,7 +25,9 @@ cd src/utils; python eval_results.py
 ### 2.
 The dataset was split into a train and test set using a 75%-25% split. The results reported below are on the test set.
 
-- Confusion matrix ![confusion_matrix](./src/fig/cm.png)
+- Confusion matrix
+
+![confusion_matrix](./src/fig/cm.png)
 
 - Recall and F1 scores at [70, 75, 80, 85, 90, 95]% precision
 
