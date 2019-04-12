@@ -138,7 +138,7 @@ def get_lowest_score(y_pred):
 if __name__ == "__main__":
 
     # Load predictions and saved clean data
-    with open("../tmp/data.pkl", "rb") as f:
+    with open("../../tmp/data.pkl", "rb") as f:
         _, _, _, test_y, inf_text, tokenizer = pickle.load(f)
 
     # Load eval predictions
@@ -153,7 +153,7 @@ if __name__ == "__main__":
     compute_confusion_matrix(test_y, eval_pred)
 
     # Load infer predictions
-    with open("../pred/inf_pred.pkl", "rb") as f:
+    with open("../../pred/inf_pred.pkl", "rb") as f:
         # (class_ids, probabilities, alphas)
         inf_results = pickle.load(f)
     inf_pred = np.squeeze(np.stack(inf_results[0]))
