@@ -9,3 +9,4 @@ Pipfile.lock
 **/pred
 **/tmp
 **/ckpt
+**/__pycache__
