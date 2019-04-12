@@ -36,8 +36,9 @@ def maybe_download():
 
 def maybe_download_embedding():
     """Downloads pretrained glove embeddings"""
+    # Defaulting to glove twitter embedding with dimension 50
     path = tf.keras.utils.get_file(
-        "glove/glove.twitter.27B.50d.txt", EMBEDDING_URL, extract=True
+        "glove.twitter.27B.50d.txt", EMBEDDING_URL, extract=True
     )
     return path
 

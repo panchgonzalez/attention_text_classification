@@ -11,6 +11,6 @@ BASE_PARAMS = defaultdict(
     hidden_size=128,  # Number of RNN hidden units
     attention_size=50,  # Size of attention mechanism
     train_steps=100000,  # number of steps to train
-    model_dir="model_ckpt/",  # Model directory
-    data_dir="data_tmp/",  # Data directory
+    model_dir="ckpt/",  # Model directory
+    data_dir="tmp/",  # Data directory
 )
