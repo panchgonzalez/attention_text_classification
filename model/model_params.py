@@ -13,4 +13,5 @@ BASE_PARAMS = defaultdict(
     train_steps=100000,  # number of steps to train
     model_dir="ckpt/",  # Model directory
     data_dir="tmp/",  # Data directory
+    pred_dir="pred/",  # Predictions directory
 )

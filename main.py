@@ -126,13 +126,18 @@ def main(argv):
     )
 
     print("\nSaving eval predictions")
+
+    # Check or create directory for predictions
+    if not os.path.exists(params["pred_dir"]):
+        os.makedirs(params["pred_dir"])
+
     class_ids, probabilities, alphas = [], [], []
     for pred_dict in eval_predictions:
         class_ids.append(pred_dict["class_ids"])
         probabilities.append(pred_dict["probabilities"])
         alphas.append(pred_dict["alphas"])
 
-    with open("eval_pred.pkl", "wb") as f:
+    with open(os.path.join(params["pred_dir"], "eval_pred.pkl"), "wb") as f:
         pickle.dump((class_ids, probabilities, alphas), f)
 
     # Make predictions on call transcripts
@@ -155,7 +160,7 @@ def main(argv):
         probabilities.append(pred_dict["probabilities"])
         alphas.append(pred_dict["alphas"])
 
-    with open("inf_pred.pkl", "wb") as f:
+    with open(os.path.join(params["pred_dir"], "inf_pred.pkl"), "wb") as f:
         pickle.dump((class_ids, probabilities, alphas), f)
 
 

@@ -4,3 +4,8 @@ target/
 .ipynb
 Pipfile
 Pipfile.lock
+
+# Ignoring dynamically created directories
+**/pred
+**/tmp
+**/ckpt
