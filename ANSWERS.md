@@ -50,7 +50,7 @@ The average sentiment for all calls is 3.078
 
 ### 4.
 
-The user with the most negative sentiment is bob558. Below is the list of the users with the lowest 5 average sentiment
+The user with the most negative sentiment is bob588. Below is the list of the users with the lowest 5 average sentiment
 
 | User   | Avg. Sentiment|
 | :----: |:-------------:|

@@ -23,7 +23,7 @@ import tensorflow as tf
 TRAIN_URL = "https://storage.googleapis.com/gk-data/interview-problem/corpus.csv"
 DATASET_ENCODING = "ISO-8859-1"
 DATASET_COLUMNS = ["target", "ids", "date", "flag", "user", "text"]
-INFERENCE_PATH = "../data/calls-with-transcripts.csv"
+INFERENCE_PATH = "./data/calls-with-transcripts.csv"
 
 EMBEDDING_URL = "http://nlp.stanford.edu/data/glove.twitter.27B.zip"
 VOCAB_SIZE = 20000
