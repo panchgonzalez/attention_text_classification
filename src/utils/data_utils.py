@@ -20,18 +20,23 @@ from sklearn.model_selection import train_test_split
 
 import tensorflow as tf
 
-TRAIN_URL = "https://storage.googleapis.com/gk-data/interview-problem/corpus.csv"
+# Training data
+DATA_URL = "http://cs.stanford.edu/people/alecmgo/trainingandtestdata.zip"
+TRAIN_FILE = "training.1600000.processed.noemotion.csv"
+TEST_FILE = "testdata.manual.2009.06.14.csv"
 DATASET_ENCODING = "ISO-8859-1"
 DATASET_COLUMNS = ["target", "ids", "date", "flag", "user", "text"]
-INFERENCE_PATH = "./data/calls-with-transcripts.csv"
 
 EMBEDDING_URL = "http://nlp.stanford.edu/data/glove.twitter.27B.zip"
+EMBEDDING_FILE = "glove.twitter.27B.50d.txt"
 VOCAB_SIZE = 20000
 EMBEDDING_SIZE = 50
 
 
 def maybe_download():
-    return tf.keras.utils.get_file(TRAIN_URL.split("/")[-1], TRAIN_URL)
+    train_path = tf.keras.utils.get_file(TRAIN_FILE, TRAIN_URL, extract=True)
+    test_path = tf.keras.utils.get_file(TEST_FILE, TRAIN_URL, extract=True)
+    return train_path, test_path
 
 
 def maybe_download_embedding():
@@ -40,13 +45,9 @@ def maybe_download_embedding():
 
     # HACK: wrap in try-except block since it fails once file is extracted and found
     try:
-        path = tf.keras.utils.get_file(
-            "glove.twitter.27B.50d.txt", EMBEDDING_URL, extract=True
-        )
+        path = tf.keras.utils.get_file(EMBEDDING_FILE, EMBEDDING_URL, extract=True)
     except:
-        path = tf.keras.utils.get_file(
-            "glove.twitter.27B.50d.txt", EMBEDDING_URL, extract=True
-        )
+        path = tf.keras.utils.get_file(EMBEDDING_FILE, EMBEDDING_URL, extract=True)
 
     return path
 
@@ -113,11 +114,11 @@ def load_data():
     """Return train, test, and inference data."""
 
     # Maybe download training data
-    train_test_path = maybe_download()
+    train_path, test_path = maybe_download()
 
     # Read data into dataframe
-    df = pd.read_csv(train_test_path, encoding=DATASET_ENCODING, names=DATASET_COLUMNS)
-    inf_df = pd.read_csv(INFERENCE_PATH, encoding=DATASET_ENCODING)
+    df = pd.read_csv(train_path, encoding=DATASET_ENCODING, names=DATASET_COLUMNS)
+    inf_df = pd.read_csv(test_path, encoding=DATASET_ENCODING)
 
     # Clean dataset
     print("  Cleaning training data")
