@@ -1,0 +1,14 @@
+# Global parameters
+model_dir: ckpt/
+data_dir: tmp/
+pred_dir: pred/
+# Embedding parameters
+embedding_size: 50
+vocab_size: 20000
+# Model parameters
+hidden_size: 128
+attention_size: 50
+# Optimizer parameters
+learning_rate: 0.0001
+batch_size: 512
+train_steps: 150000

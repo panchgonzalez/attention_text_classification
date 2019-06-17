@@ -13,8 +13,8 @@ import numpy as np
 import tensorflow as tf
 
 from .model import model as classifier
-from .model import model_params
 from .utils import data_utils
+from .utils import utils
 
 
 def model_fn(features, labels, mode, params):
@@ -55,7 +55,7 @@ def model_fn(features, labels, mode, params):
     assert mode == tf.estimator.ModeKeys.TRAIN
 
     # Define optimizer
-    optimizer = tf.train.AdamOptimizer(learning_rate=params["learning_rate"])
+    optimizer = tf.train.AdamOptimizer(learning_rate=params.learning_rate)
 
     # Define train op
     train_op = optimizer.minimize(loss, global_step=tf.train.get_global_step())
@@ -67,24 +67,24 @@ def main(argv):
     """Main entry point."""
 
     # Get the base parameters
-    params = model_params.BASE_PARAMS
+    params = utils.load_config()
 
     # Fetch the data
     train_X, train_y, test_X, test_y, inf_text, tokenizer = data_utils.get_data(params)
 
     # Add tokenizer to params
-    params["tokenizer"] = tokenizer
+    params.tokenizer = tokenizer
 
     # Create classifier
     print("\nBuilding model")
 
     # Make model directory path
-    if not os.path.exists(params["model_dir"]):
-        os.makedirs(params["model_dir"])
+    if not os.path.exists(params.model_dir):
+        os.makedirs(params.model_dir)
 
     # Build model
     estimator = tf.estimator.Estimator(
-        model_fn=model_fn, params=params, model_dir=params["model_dir"]
+        model_fn=model_fn, params=params, model_dir=params.model_dir
     )
 
     # Train the model
@@ -93,10 +93,10 @@ def main(argv):
         input_fn=lambda: data_utils.train_input_fn(
             features=train_X,
             labels=train_y,
-            batch_size=params["batch_size"],
+            batch_size=params.batch_size,
             buffer_size=1_200_000,
         ),
-        steps=params["train_steps"],
+        steps=params.train_steps,
     )
 
     # Evaluate the model.
@@ -105,7 +105,7 @@ def main(argv):
         input_fn=lambda: data_utils.eval_input_fn(
             features=test_X,
             labels=test_y,
-            batch_size=params["batch_size"],
+            batch_size=params.batch_size,
             shuffle=False,
             buffer_size=400_000,
         )
@@ -128,16 +128,16 @@ def main(argv):
     print("\nSaving eval predictions")
 
     # Check or create directory for predictions
-    if not os.path.exists(params["pred_dir"]):
-        os.makedirs(params["pred_dir"])
+    if not os.path.exists(params.pred_dir):
+        os.makedirs(params.pred_dir)
 
     class_ids, probabilities, alphas = [], [], []
     for pred_dict in eval_predictions:
-        class_ids.append(pred_dict["class_ids"])
-        probabilities.append(pred_dict["probabilities"])
-        alphas.append(pred_dict["alphas"])
+        class_ids.append(pred_dict.class_ids)
+        probabilities.append(pred_dict.probabilities)
+        alphas.append(pred_dict.alphas)
 
-    with open(os.path.join(params["pred_dir"], "eval_pred.pkl"), "wb") as f:
+    with open(os.path.join(params.pred_dir, "eval_pred.pkl"), "wb") as f:
         pickle.dump((class_ids, probabilities, alphas), f)
 
     # Make predictions on call transcripts
@@ -160,7 +160,7 @@ def main(argv):
         probabilities.append(pred_dict["probabilities"])
         alphas.append(pred_dict["alphas"])
 
-    with open(os.path.join(params["pred_dir"], "inf_pred.pkl"), "wb") as f:
+    with open(os.path.join(params.pred_dir, "inf_pred.pkl"), "wb") as f:
         pickle.dump((class_ids, probabilities, alphas), f)
 
 

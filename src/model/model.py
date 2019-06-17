@@ -56,12 +56,12 @@ class Model(object):
     def init_embedding(self):
         """Initialize word embedding matrix using pretrained embedding."""
 
-        embedding = data_utils.get_embedding_matrix(self.params["tokenizer"])
+        embedding = data_utils.get_embedding_matrix(self.params.tokenizer)
 
         with tf.name_scope("embedding"):
             embedding = tf.get_variable(
                 name="embedding_matrix",
-                shape=[self.params["vocab_size"], self.params["embedding_size"]],
+                shape=[self.params.vocab_size, self.params.embedding_size],
                 initializer=tf.constant_initializer(embedding),
                 dtype=tf.float32,
                 trainable=False,
@@ -81,7 +81,7 @@ class Model(object):
         sequence_length = tf.tile([50], [tf.shape(inputs)[0]])
         with tf.name_scope("rnn"):
             # Construct cell with cell size num_rnn_units
-            cell = tf.nn.rnn_cell.LSTMCell(num_units=self.params["hidden_size"])
+            cell = tf.nn.rnn_cell.LSTMCell(num_units=self.params.hidden_size)
 
             # NOTE: bi_outputs would be used by attention mechanism
             bi_outputs, bi_state = tf.nn.bidirectional_dynamic_rnn(
@@ -101,8 +101,8 @@ class Model(object):
         Returns:
             attention_output: tensor of shape [batch_size, 2*hidden_size]
         """
-        hidden_size = 2 * self.params["hidden_size"]
-        attention_size = self.params["attention_size"]
+        hidden_size = 2 * self.params.hidden_size
+        attention_size = self.params.attention_size
 
         with tf.name_scope("attention"):
 

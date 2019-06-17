@@ -150,10 +150,10 @@ def get_data(params):
     """Load, clean, tokenize, and pad data fixedlen sequences."""
 
     # Load data if saved previously
-    if os.path.exists(params["data_dir"]):
-        print(f"Loading previously cleaned data from {params['data_dir']}")
+    if os.path.exists(params.data_dir):
+        print(f"Loading previously cleaned data from {params.data_dir}")
 
-        with open(os.path.join(params["data_dir"], "data.pkl"), "rb") as f:
+        with open(os.path.join(params.data_dir, "data.pkl"), "rb") as f:
             train_X, test_X, train_y, test_y, inf_text, tokenizer = pickle.load(f)
 
         return train_X, train_y, test_X, test_y, inf_text, tokenizer
@@ -180,9 +180,9 @@ def get_data(params):
         )
 
         # Save cleaned data for later
-        print(f"Saving cleaned data to {params['data_dir']}")
-        os.makedirs(params["data_dir"])
-        with open(os.path.join(params["data_dir"], "data.pkl"), "wb") as f:
+        print(f"Saving cleaned data to {params.data_dir}")
+        os.makedirs(params.data_dir)
+        with open(os.path.join(params.data_dir, "data.pkl"), "wb") as f:
             pickle.dump((train_X, test_X, train_y, test_y, inf_text, tokenizer), f)
 
         return train_X, train_y, test_X, test_y, inf_text, tokenizer
