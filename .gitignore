@@ -11,3 +11,4 @@ Pipfile.lock
 **/tmp
 **/ckpt
 **/__pycache__
+**/*.zip

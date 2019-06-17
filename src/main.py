@@ -67,7 +67,7 @@ def main(argv):
     """Main entry point."""
 
     # Get the base parameters
-    params = utils.load_config()
+    params = utils.load_config("config.yml")
 
     # Fetch the data
     train_X, train_y, test_X, test_y, inf_text, tokenizer = data_utils.get_data(params)

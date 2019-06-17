@@ -22,7 +22,7 @@ import tensorflow as tf
 
 # Training data
 DATA_URL = "http://cs.stanford.edu/people/alecmgo/trainingandtestdata.zip"
-TRAIN_FILE = "training.1600000.processed.noemotion.csv"
+TRAIN_FILE = "training.1600000.processed.noemoticon.csv"
 TEST_FILE = "testdata.manual.2009.06.14.csv"
 DATASET_ENCODING = "ISO-8859-1"
 DATASET_COLUMNS = ["target", "ids", "date", "flag", "user", "text"]
@@ -33,23 +33,13 @@ VOCAB_SIZE = 20000
 EMBEDDING_SIZE = 50
 
 
-def maybe_download():
-    train_path = tf.keras.utils.get_file(TRAIN_FILE, TRAIN_URL, extract=True)
-    test_path = tf.keras.utils.get_file(TEST_FILE, TRAIN_URL, extract=True)
-    return train_path, test_path
-
-
-def maybe_download_embedding():
-    """Downloads pretrained glove embeddings"""
-    # Defaulting to glove twitter embedding with dimension 50
-
-    # HACK: wrap in try-except block since it fails once file is extracted and found
-    try:
-        path = tf.keras.utils.get_file(EMBEDDING_FILE, EMBEDDING_URL, extract=True)
-    except:
-        path = tf.keras.utils.get_file(EMBEDDING_FILE, EMBEDDING_URL, extract=True)
-
-    return path
+# NOTE: As it stands there are a couple of issues with the get_file method. It seems to
+# incorrectly write the training data after it is extracted, and throws an error when
+# attempting to retrieve files within unzipped directories. For now, we will download
+# the necessary files beforehand and find them using maybe_download()
+def maybe_download(file, url, extract=False):
+    """Download file from URL"""
+    return tf.keras.utils.get_file(fname=file, origin=url, extract=extract)
 
 
 def text_to_wordlist(text, remove_stopwords=False, stem_words=False):
@@ -114,20 +104,18 @@ def load_data():
     """Return train, test, and inference data."""
 
     # Maybe download training data
-    train_path, test_path = maybe_download()
+    train_path = maybe_download(TRAIN_FILE, DATA_URL)
+    test_path = maybe_download(TEST_FILE, DATA_URL)
 
     # Read data into dataframe
     df = pd.read_csv(train_path, encoding=DATASET_ENCODING, names=DATASET_COLUMNS)
-    inf_df = pd.read_csv(test_path, encoding=DATASET_ENCODING)
+    inf_df = pd.read_csv(test_path, encoding=DATASET_ENCODING, names=DATASET_COLUMNS)
 
     # Clean dataset
     print("  Cleaning training data")
     df.text = df.text.progress_apply(lambda x: text_to_wordlist(x))
     print("  Cleaning inference data")
-    inf_df.transcript = inf_df.transcript.progress_apply(lambda x: text_to_wordlist(x))
-
-    # Replace 4 with 1
-    df.target.replace(4, 1, inplace=True)
+    inf_df.text = inf_df.text.progress_apply(lambda x: text_to_wordlist(x))
 
     return df, inf_df
 
