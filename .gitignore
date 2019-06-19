@@ -4,6 +4,7 @@ target/
 .ipynb
 Pipfile
 Pipfile.lock
+**/.remote-sync.json
 
 # Ignoring dynamically created directories
 **/data

@@ -5,6 +5,7 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 import os
+import argparse
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
@@ -63,14 +64,71 @@ def model_fn(features, labels, mode, params):
     return tf.estimator.EstimatorSpec(mode, loss=loss, train_op=train_op)
 
 
+def train_and_eval(estimator, params):
+    """Train and evaluate estimator."""
+
+    # Fetch the data
+    train_X, train_y, test_X, test_y, _, _ = data_utils.get_data(params)
+
+    # Define train and eval spec
+    train_spec = tf.estimator.TrainSpec(
+        input_fn=lambda: data_utils.input_fn(
+            features=train_X,
+            labels=train_y,
+            batch_size=params.batch_size,
+            buffer_size=1_200_000,
+        ),
+        max_steps=params.train.steps,
+    )
+    eval_spec = tf.estimator.EvalSpec(
+        input_fn=lambda: data_utils.input_fn(
+            features=test_X, labels=test_y, batch_size=1024, buffer_size=400_000
+        ),
+        steps=params.eval.steps,
+        start_delay_secs=params.eval.start_delay_secs,
+        throttle_secs=params.eval.throttle_secs,
+    )
+
+    tf.estimator.train_and_evaluate(estimator, train_spec, eval_spec)
+
+
+def predict(estimator, params):
+    """Make predictions."""
+
+    # Fetch the data
+    _, _, _, _, inf_text, _ = data_utils.get_data(params)
+
+    # Make predictions on call transcripts
+    print("\nMaking predictions on inference set")
+    predictions = estimator.predict(
+        input_fn=lambda: data_utils.input_fn(
+            features=inf_text, labels=None, batch_size=1024, buffer_size=5000
+        )
+    )
+
+    # Save after this
+    print("\nSaving infer predictions")
+    class_ids, probabilities, alphas = [], [], []
+    for pred_dict in predictions:
+        class_ids.append(pred_dict["class_ids"])
+        probabilities.append(pred_dict["probabilities"])
+        alphas.append(pred_dict["alphas"])
+
+    with open(os.path.join(params.pred_dir, "inf_pred.pkl"), "wb") as f:
+        pickle.dump((class_ids, probabilities, alphas), f)
+
+
 def main(argv):
     """Main entry point."""
 
+    # parse arguments
+    args = parser.parse_args(argv[1:])
+
     # Get the base parameters
-    params = utils.load_config("config.yml")
+    params = utils.load_config("src/config.yml")
 
     # Fetch the data
-    train_X, train_y, test_X, test_y, inf_text, tokenizer = data_utils.get_data(params)
+    _, _, _, _, _, tokenizer = data_utils.get_data(params)
 
     # Add tokenizer to params
     params.tokenizer = tokenizer
@@ -87,84 +145,20 @@ def main(argv):
         model_fn=model_fn, params=params, model_dir=params.model_dir
     )
 
-    # Train the model
-    print("\nTraining model")
-    estimator.train(
-        input_fn=lambda: data_utils.train_input_fn(
-            features=train_X,
-            labels=train_y,
-            batch_size=params.batch_size,
-            buffer_size=1_200_000,
-        ),
-        steps=params.train_steps,
-    )
+    # Train and eval, or predict
+    if args.train_and_eval:
+        train_and_eval(estimator, params)
 
-    # Evaluate the model.
-    print("\nEvaluating model on test set")
-    eval_result = estimator.evaluate(
-        input_fn=lambda: data_utils.eval_input_fn(
-            features=test_X,
-            labels=test_y,
-            batch_size=params.batch_size,
-            shuffle=False,
-            buffer_size=400_000,
-        )
-    )
-
-    print("\nTest set accuracy: {accuracy:0.3f}\n".format(**eval_result))
-
-    # Make predictions on evaluation set
-    print("\nMaking predictions on evaluation set")
-    eval_predictions = estimator.predict(
-        input_fn=lambda: data_utils.eval_input_fn(
-            features=test_X,
-            labels=None,
-            batch_size=1024,
-            shuffle=False,
-            buffer_size=400_000,
-        )
-    )
-
-    print("\nSaving eval predictions")
-
-    # Check or create directory for predictions
-    if not os.path.exists(params.pred_dir):
-        os.makedirs(params.pred_dir)
-
-    class_ids, probabilities, alphas = [], [], []
-    for pred_dict in eval_predictions:
-        class_ids.append(pred_dict.class_ids)
-        probabilities.append(pred_dict.probabilities)
-        alphas.append(pred_dict.alphas)
-
-    with open(os.path.join(params.pred_dir, "eval_pred.pkl"), "wb") as f:
-        pickle.dump((class_ids, probabilities, alphas), f)
-
-    # Make predictions on call transcripts
-    print("\nMaking predictions on inference set")
-    predictions = estimator.predict(
-        input_fn=lambda: data_utils.eval_input_fn(
-            features=inf_text,
-            labels=None,
-            batch_size=1024,
-            shuffle=False,
-            buffer_size=5000,
-        )
-    )
-
-    # Save after this
-    print("\nSaving infer predictions")
-    class_ids, probabilities, alphas = [], [], []
-    for pred_dict in predictions:
-        class_ids.append(pred_dict["class_ids"])
-        probabilities.append(pred_dict["probabilities"])
-        alphas.append(pred_dict["alphas"])
-
-    with open(os.path.join(params.pred_dir, "inf_pred.pkl"), "wb") as f:
-        pickle.dump((class_ids, probabilities, alphas), f)
+    if args.predict:
+        predict(estimator, params)
 
 
 if __name__ == "__main__":
+
+    # Create argument parser
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--train_and_eval", dest="train_and_eval", action="store_true")
+    parser.add_argument("--predict", dest="predict", action="store_true")
 
     tf.logging.set_verbosity(tf.logging.INFO)
     tf.app.run(main)

@@ -117,6 +117,9 @@ def load_data():
     print("  Cleaning inference data")
     inf_df.text = inf_df.text.progress_apply(lambda x: text_to_wordlist(x))
 
+    # Replace 4 with 1
+    df.target.replace(4, 1, inplace=True)
+
     return df, inf_df
 
 
@@ -160,7 +163,7 @@ def get_data(params):
         # Pad text sequences
         print("Padding text sequences")
         text = get_padded_sequences(tokenizer, df.text)
-        inf_text = get_padded_sequences(tokenizer, inf_df.transcript)
+        inf_text = get_padded_sequences(tokenizer, inf_df.text)
 
         # Split data into train/test sets
         train_X, test_X, train_y, test_y = train_test_split(
@@ -179,7 +182,7 @@ def get_data(params):
 def get_embedding_matrix(tokenizer):
     """Construct embeding matrix from pretrained embedding."""
 
-    embedding_path = maybe_download_embedding()
+    embedding_path = maybe_download(EMBEDDING_FILE, EMBEDDING_URL)
 
     embeddings_index = dict()
     with open(embedding_path) as f:
@@ -200,36 +203,22 @@ def get_embedding_matrix(tokenizer):
     return embedding
 
 
-def train_input_fn(features, labels, batch_size, buffer_size=None):
-    """Load and return batched examples."""
+def input_fn(features, labels, batch_size, buffer_size=None):
+    """Load and return batched examples"""
     assert buffer_size is not None
 
-    # Convert inputs into tf.data.Dataset
-    dataset = tf.data.Dataset.from_tensor_slices((features, labels))
-
-    # Shuffle dataset, repeat, and make batches
-    dataset = dataset.shuffle(buffer_size).repeat()
-    dataset = dataset.batch(batch_size)
-
-    return dataset
-
-
-def eval_input_fn(features, labels, batch_size, shuffle=False, buffer_size=None):
-    """Load and return batched examples."""
-    assert buffer_size is not None
-
+    input_data = (features, labels)
     if labels is None:
-        # No labels for predicting, use only features
-        inputs = features
-    else:
-        inputs = (features, labels)
+        input_data = features
 
     # Convert inputs into tf.data.Dataset
-    dataset = tf.data.Dataset.from_tensor_slices(inputs)
+    dataset = tf.data.Dataset.from_tensor_slices(input_data)
 
-    # Shuffle dataset, repeat, and make batches
-    if shuffle:
-        dataset = dataset.shuffle(buffer_size).repeat()
+    # Optionally shuffle and repeat
+    if labels is not None:
+        dataset = dataset.shuffle(buffer_size=buffer_size, seed=0).repeat()
+
+    # Batch dataset
     dataset = dataset.batch(batch_size)
 
     return dataset
