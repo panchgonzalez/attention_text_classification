@@ -21,6 +21,9 @@ from .utils import utils
 def model_fn(features, labels, mode, params):
     """Defines EstimatorSpec passed to Estimator."""
 
+    if isinstance(features, dict):  # For serving
+        features = features["feature"]
+
     # Create model and get output logits and attention weights
     model = classifier.Model(params, mode == tf.estimator.ModeKeys.TRAIN)
     logits, alphas = model(inputs=features)

@@ -1,7 +1,10 @@
 target/
 .ipynb_checkpoints/
 .DS_Store
-.ipynb
+*.ipynb
+*.pkl
+**/saved_model
+*.html
 Pipfile
 Pipfile.lock
 **/.remote-sync.json
